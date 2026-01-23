@@ -4,26 +4,34 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import productRoutes from "./routes/productRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import morgan from "morgan";
 
-dotenv.config();        // Load .env variables
-connectDB();            // Connect MongoDB
+dotenv.config();
+connectDB();
 
 const app = express();
 
-// 🔑 MIDDLEWARE (VERY IMPORTANT)
+// Middleware
 app.use(cors());
-app.use(express.json()); // 👈 Allows reading JSON body
+app.use(express.json());
+app.use(morgan("dev"));
 
-// 🔗 ROUTES
+// Routes
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 
-// 🏠 TEST ROUTE
+// Test Route
 app.get("/", (req, res) => {
   res.send("API Running...");
 });
 
-// 🚀 SERVER START
+// Error Handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Server Error" });
+});
+
+// Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

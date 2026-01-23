@@ -1,6 +1,6 @@
 import Product from "../models/Product.js";
 
-/* CREATE */
+/* CREATE (optional, not needed for product page) */
 export const createProduct = async (req, res) => {
   try {
     const product = await Product.create(req.body);
@@ -10,7 +10,7 @@ export const createProduct = async (req, res) => {
   }
 };
 
-/* READ ALL */
+/* READ ALL (REQUIRED for product page ✅) */
 export const getProducts = async (req, res) => {
   try {
     const products = await Product.find();
@@ -20,7 +20,7 @@ export const getProducts = async (req, res) => {
   }
 };
 
-/* READ ONE */
+/* READ ONE (optional) */
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -33,7 +33,7 @@ export const getProductById = async (req, res) => {
   }
 };
 
-/* UPDATE */
+/* UPDATE (optional) */
 export const updateProduct = async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(
@@ -47,10 +47,13 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-/* DELETE */
+/* DELETE (optional) */
 export const deleteProduct = async (req, res) => {
   try {
-    await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product)
+      return res.status(404).json({ message: "Product not found" });
+
     res.json({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(400).json({ message: error.message });
