@@ -13,7 +13,12 @@ export const createStudent = async (req, res) => {
       dob,
       year,
       address,
+      interestedSubjects,
     } = req.body;
+    
+     const parsedSubjects = interestedSubjects
+  ? JSON.parse(interestedSubjects)
+  : [];
 
     // Mandatory field check
     if (!firstName || !lastName || !email || !mobile || !gender || !course) {
@@ -46,8 +51,10 @@ export const createStudent = async (req, res) => {
       dob,
       year,
       address,
+      interestedSubjects: parsedSubjects,
     });
 
+   
     res.status(201).json({
       success: true,
       message: "Student created successfully",

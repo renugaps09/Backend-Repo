@@ -31,6 +31,13 @@ const studentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    interestedSubjects: {
+    type: [String],
+    default: [],
+    },
+
+
     photo: {
       type: String,
       default: null,
