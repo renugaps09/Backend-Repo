@@ -10,7 +10,12 @@ import productRoutes from "./routes/productRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
 
+// ✅ ADD THIS
+import bookRoutes from "./routes/bookRoutes.js";
+
 dotenv.config();
+console.log("API KEY =", process.env.API_KEY);
+
 connectDB();
 
 const app = express();
@@ -25,13 +30,15 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 // Serve uploaded files
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/uploads", express.static(path.resolve("uploads")));
 
 // Routes
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
+
+// ✅ ADD BOOK ROUTE HERE
+app.use("/api/books", bookRoutes);
 
 // Test route
 app.get("/", (req, res) => {

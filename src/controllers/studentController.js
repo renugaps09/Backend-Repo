@@ -1,4 +1,5 @@
 import Student from "../models/Student.js";
+import cloudinary from "../cloudinary.js";
 
 // ✅ Create Student
 export const createStudent = async (req, res) => {
@@ -15,12 +16,11 @@ export const createStudent = async (req, res) => {
       address,
       interestedSubjects,
     } = req.body;
-    
-     const parsedSubjects = interestedSubjects
-  ? JSON.parse(interestedSubjects)
-  : [];
 
-    // Mandatory field check
+    const parsedSubjects = interestedSubjects
+      ? JSON.parse(interestedSubjects)
+      : [];
+
     if (!firstName || !lastName || !email || !mobile || !gender || !course) {
       return res.status(400).json({
         success: false,
@@ -28,7 +28,6 @@ export const createStudent = async (req, res) => {
       });
     }
 
-    // Check duplicate email
     const existingStudent = await Student.findOne({ email });
     if (existingStudent) {
       return res.status(400).json({
@@ -37,8 +36,16 @@ export const createStudent = async (req, res) => {
       });
     }
 
-    // Optional photo
-    const photo = req.file ? req.file.filename : null;
+    // ✅ Cloudinary Upload
+    let photo = null;
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "student_profiles",
+      });
+
+      photo = result.secure_url;
+    }
 
     const student = await Student.create({
       firstName,
@@ -54,7 +61,6 @@ export const createStudent = async (req, res) => {
       interestedSubjects: parsedSubjects,
     });
 
-   
     res.status(201).json({
       success: true,
       message: "Student created successfully",
@@ -78,12 +84,16 @@ export const getAllStudents = async (req, res) => {
   }
 };
 
-// ✅ Get Single Student
+// ✅ Get Student By ID
 export const getStudentById = async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
-    if (!student)
-      return res.status(404).json({ success: false, message: "Student not found" });
+
+    if (!student) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Student not found" });
+    }
 
     res.status(200).json({ success: true, student });
   } catch (error) {
@@ -95,11 +105,20 @@ export const getStudentById = async (req, res) => {
 export const updateStudent = async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
-    if (!student)
-      return res.status(404).json({ success: false, message: "Student not found" });
 
-    // New photo
-    if (req.file) student.photo = req.file.filename;
+    if (!student) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Student not found" });
+    }
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "student_profiles",
+      });
+
+      student.photo = result.secure_url;
+    }
 
     Object.assign(student, req.body);
     await student.save();
@@ -118,11 +137,19 @@ export const updateStudent = async (req, res) => {
 export const deleteStudent = async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
-    if (!student)
-      return res.status(404).json({ success: false, message: "Student not found" });
+
+    if (!student) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Student not found" });
+    }
 
     await student.deleteOne();
-    res.status(200).json({ success: true, message: "Student deleted successfully" });
+
+    res.status(200).json({
+      success: true,
+      message: "Student deleted successfully",
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
